@@ -1,3 +1,4 @@
+
 from kafka import KafkaConsumer
 import json
 from typing import List, Dict, Tuple
@@ -263,7 +264,6 @@ def main():
         print("\nStopping detector...")
     finally:
         detector.consumer.close()
-
 
 if __name__ == "__main__":
     main()
