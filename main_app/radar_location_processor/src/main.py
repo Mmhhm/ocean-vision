@@ -24,7 +24,7 @@
 from ingestion.sensors_consumer import KafkaConsumerService  
 from processing.message_processor import MessageProcessor  
 from schemas.radar_sensor_schema import radar_sensor_schema     
-from spark_connection import get_spark_session                    
+from main_app.radar_location_processor.spark_connection import get_spark_session
 
 def process_kafka_message(spark_processor, message):
     """
