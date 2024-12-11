@@ -13,9 +13,9 @@ class ShipModel(Base):
     id = Column(Integer, primary_key=True)
     type = Column(String)
     mmsi = Column(String)  # MMSI of the detected ship
-    timestamp = Column(DateTime, default=datetime.now(), nullable=False)
-    lat = Column(Float, nullable=False)  # Latitude of the detected object
-    lon = Column(Float, nullable=False)  # Longitude of the detected object
+    timestamp = Column(DateTime, default=datetime.now(), nullable=True)
+    lat = Column(Float, nullable=True)  # Latitude of the detected object
+    lon = Column(Float, nullable=True)  # Longitude of the detected object
     object_size = Column(Integer)  # Size of the detected object (e.g., m^2 or numeric)
     heat_temperature_celsius = Column(Float)  # Temperature of the detected object (in Celsius)
     hostility = Column(Float)
