@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c985b46f-f0d5-4daf-bcfa-7a026781b143" name="Changes" comment="Added schemas to spark">
-      <change afterPath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/danger_analyze.py" afterDir="false" />
+    <list default="true" id="c985b46f-f0d5-4daf-bcfa-7a026781b143" name="Changes" comment="Added Spark analysis">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/db_service/sql/sqlalchemy_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/db_service/sql/sqlalchemy_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/spark_connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/radar_location_processor/spark_connection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/processing/message_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/radar_location_processor/src/processing/message_processor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/velocity_calculation.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/velocity_calculation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/radar_consumer.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/kafka_service/kafka_consumer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/sonar_consumer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/thermal_consumer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/weather_consumer.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,7 +127,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733919791103</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added Spark analysis">
+      <option name="closed" value="true" />
+      <created>1733951400287</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1733951400287</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -136,6 +143,7 @@
     <MESSAGE value="Basic architecture" />
     <MESSAGE value="Initial new_dev branch" />
     <MESSAGE value="Added schemas to spark" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added schemas to spark" />
+    <MESSAGE value="Added Spark analysis" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Spark analysis" />
   </component>
 </project>
