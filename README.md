@@ -21,10 +21,11 @@ This application collects data from multiple sensors on a ship, including radar,
 
 ## Technology Stack
 
-- **MQTT**: Lightweight messaging protocol for real-time data streaming.
+_- **MQTT**: Lightweight messaging protocol for real-time data streaming.
 - **SQL**: For structured data storage and querying.
 - **MongoDB**: Data lake for storing raw, unstructured sensor data.
 - **Kafka**: For event streaming and processing of real-time data.
+- **Redis**: Temporarily stores data for quick access and analysis.
 - **Neo4j**: For managing and querying relationships between ships, submarines, and their surroundings.
 
 ## Installation
