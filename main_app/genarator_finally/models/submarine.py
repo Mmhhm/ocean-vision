@@ -44,9 +44,8 @@ class Submarine:
         self.heading += random.uniform(-5, 5)
         self.heading %= 360
 
-        # Move if speed is sufficient
+
         if self.speed > 0.5:
-            # Convert speed from knots to km/h and calculate distance for the time interval
             distance = (self.speed * 1.852) * (time_delta_seconds / 3600)
 
             # Update position

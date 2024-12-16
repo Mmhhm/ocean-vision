@@ -5,11 +5,56 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c985b46f-f0d5-4daf-bcfa-7a026781b143" name="Changes" comment="Added Spark analysis">
+      <change afterPath="$PROJECT_DIR$/main_app/map/map_app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/static.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/download (4).png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/download.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/ship.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/ship_1_3d.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/ship_3d.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/static/submarine.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map/templates/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_app/map_2/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ocean-vision.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ocean-vision.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/radar_consumer.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/kafka_service/kafka_consumer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/sonar_consumer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/thermal_consumer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/weather_consumer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/data_lake/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/map/asdfg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/data_service/extract_from_redis.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/data_service/extract_from_redis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/db_config/mongodb_conn.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/db_config/mongodb_conn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/db_service/sql/sqlalchemy_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/db_service/sql/sqlalchemy_models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/generic_service/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/map/static/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/generic_service/generic_functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/kafka_listener.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/kafka_service/kafka_listener.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/kafka_service/mqtt_listener.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/kafka_service/mqtt_listener.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/map_2/map_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/spark_connection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/map_2/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/ingestion/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/ingestion/sensors_consumer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/processing/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/processing/message_processor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/schemas/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/schemas/heat_sensor_schema.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/schemas/radar_sensor_schema.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/schemas/sonar_sensor_schema.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/schemas/weather_schema.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/danger_analyze.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/location_calculator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/radar_location_processor/src/transformation/velocity_calculation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/sensors_service/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/sql_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sql_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +76,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;matanjerbi&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Mmhhm/ocean-vision.git&quot;,
+    &quot;accountId&quot;: &quot;f45c3147-b33e-44ed-8cc1-126b8e7e1550&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -46,15 +103,19 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mqtt_listener.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;new__dev&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/mkf/Desktop/IDF DATA Course/Mid Course Project/pythonProject3&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mkf/Desktop/IDF DATA Course/kafka/kafka_mongo&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mkf\Desktop\IDF DATA Course\ocean-vision-project\ocean-vision 2\ocean-vision" />
       <recent name="C:\Users\mkf\Desktop\IDF DATA Course\ocean-vision-project\ocean-vision\main_app" />
     </key>
   </component>
@@ -72,6 +133,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_app/radar_location_processor/src/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -102,6 +164,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1733681229068</updated>
+      <workItem from="1734267130022" duration="8000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -137,6 +200,9 @@
     </task>
     <option name="localTasksCounter" value="5" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />

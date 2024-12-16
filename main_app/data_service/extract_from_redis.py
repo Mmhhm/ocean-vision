@@ -5,14 +5,9 @@ from repository.sql_repository import insert_into_ship_table, insert_into_submar
 
 
 def process_json_from_redis():
-    """
-    Processes JSON objects from Redis and inserts them into the appropriate table based on their type.
 
-    Args:
-        redis_client (redis.Redis): Redis client instance.
-    """
     for key in redis_client.scan_iter():
-        # Retrieve the JSON data from Redis
+        # Extract the JSON data from Redis
         json_data = redis_client.get(key)
         if not json_data:
             continue
@@ -28,3 +23,4 @@ def process_json_from_redis():
                 insert_into_submarine_table(parsed_data)
         except json.JSONDecodeError:
             print(f"Failed to decode JSON for key: {key}")
+

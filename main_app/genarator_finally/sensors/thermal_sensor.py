@@ -35,5 +35,4 @@ class ThermalSensor(BaseSensor):
             "detected_objects": detected_objects
         }
 
-        self.send_to_kafka(data)
         return data

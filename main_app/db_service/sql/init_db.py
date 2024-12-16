@@ -4,5 +4,5 @@ from base_model import Base
 
 # Initialize the engine and create all the tables
 def init_db():
-    engine = create_engine("postgresql://username:1234@localhost/ocean_vision")
+    engine = create_engine("postgresql://username:password@localhost/ocean_vision")
     Base.metadata.create_all(engine)

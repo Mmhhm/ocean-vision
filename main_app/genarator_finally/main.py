@@ -190,7 +190,7 @@ async def main():
             manager.update_vehicles(5)
 
             # Wait before next update
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
     except KeyboardInterrupt:
         print("\nStopping data generation...")

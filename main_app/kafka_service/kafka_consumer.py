@@ -14,15 +14,15 @@ spark = SparkSession.builder \
     .appName("Real-Time Ship/Submarine Analysis") \
     .getOrCreate()
 
-# UDF to calculate hostility (example)
+# UDF to calculate hostility
 @udf(FloatType())
 def calculate_hostility(speed, heat_temp, distance, size):
-    # A simplistic formula to calculate hostility based on the given data points
+    # A simple formula to calculate hostility
     hostility = (speed * 0.5 + heat_temp * 0.3) - (distance * 0.1) + (size * 0.05)
     return max(0, min(hostility, 100))
 
 
-# UDF to calculate danger (example)
+# UDF to calculate danger
 @udf(FloatType())
 def calculate_danger(size, depth, speed, temp):
     # A simplistic formula to calculate danger based on the given data points
@@ -60,7 +60,7 @@ weather_sensor_schema = "coord STRUCT<lon: FLOAT, lat: FLOAT>, weather ARRAY<STR
                         "dt: INT, sys STRUCT<sunrise: INT, sunset: INT>, timezone: INT, id: INT, " \
                         "name: STRING, cod: INT"
 
-# Transform the Kafka data to JSON and apply the appropriate schema
+# Transform the Kafka data to JSON
 json_df = kafka_stream_df.selectExpr("CAST(value AS STRING) AS json_data")
 
 heat_sensor_df = json_df.select(from_json(col("json_data"), heat_sensor_schema).alias("data"))
@@ -68,7 +68,7 @@ radar_sensor_df = json_df.select(from_json(col("json_data"), radar_sensor_schema
 sonar_sensor_df = json_df.select(from_json(col("json_data"), sonar_sensor_schema).alias("data"))
 weather_sensor_df = json_df.select(from_json(col("json_data"), weather_sensor_schema).alias("data"))
 
-# Example of adding hostility and danger columns
+# Add hostility and danger columns
 heat_sensor_with_analysis = heat_sensor_df.select(
     "*",
     calculate_hostility(col("data.detected_objects.speed_knots"),
@@ -105,7 +105,7 @@ weather_sensor_with_analysis = weather_sensor_df.select(
     "*"
 )
 
-# Output the results (this could be saved to another Kafka topic, file, etc.)
+# Output the results
 query_heat_sensor = heat_sensor_with_analysis.writeStream \
     .outputMode("append") \
     .format("console") \
@@ -126,7 +126,7 @@ query_weather_sensor = weather_sensor_with_analysis.writeStream \
     .format("console") \
     .start()
 
-# Await termination to keep the stream active
+# Wait for termination to keep the stream active
 query_heat_sensor.awaitTermination()
 query_radar_sensor.awaitTermination()
 query_sonar_sensor.awaitTermination()

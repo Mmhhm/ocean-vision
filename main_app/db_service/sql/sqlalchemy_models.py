@@ -1,54 +1,55 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from ctypes.wintypes import BOOLEAN
+
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from base_model import Base
 
 
-# Todo make sure the analyzed data is inserted into the tables
-# Thermal Sensor Data Model
+
 class ShipModel(Base):
     __tablename__ = 'ships'
 
     id = Column(Integer, primary_key=True)
     type = Column(String)
-    mmsi = Column(String)  # MMSI of the detected ship
+    mmsi = Column(String)
     timestamp = Column(DateTime, default=datetime.now(), nullable=True)
-    lat = Column(Float, nullable=True)  # Latitude of the detected object
-    lon = Column(Float, nullable=True)  # Longitude of the detected object
-    object_size = Column(Integer)  # Size of the detected object (e.g., m^2 or numeric)
-    heat_temperature_celsius = Column(Float)  # Temperature of the detected object (in Celsius)
-    hostility = Column(Float)
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
+    object_size = Column(Integer)
+    heat_temperature_celsius = Column(Float)
+    hostility = Column(Boolean)
     danger = Column(Float)
-    speed_knots = Column(Float)  # Speed of the object (in knots)
-    bearing_degrees = Column(Float)  # Bearing in degrees
-    distance_km = Column(Float)  # Distance from the thermal sensor (in km)
-    status = Column(String)  # e.g., "Moving", "Stationary"
+    speed_knots = Column(Float)
+    bearing_degrees = Column(Float)
+    distance_km = Column(Float)
+    status = Column(String)
 
-# Sonar Sensor Data Model (Updated with object_shape and object_material)
+
 class SubmarineModel(Base):
     __tablename__ = 'Submarines'
 
     id = Column(Integer, primary_key=True)
     type = Column(String)
-    submarine_id = Column(String)  # Submarine ID if applicable (e.g., "SUB0001")
+    submarine_id = Column(String)
     timestamp = Column(DateTime, default=datetime.now(), nullable=False)
-    lat = Column(Float, nullable=False)  # Latitude of the detected object
-    lon = Column(Float, nullable=False)  # Longitude of the detected object
-    depth_meters = Column(Float)  # Depth of the detected object (in meters)
+    lat = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    depth_meters = Column(Float)
     danger = Column(Float)
-    distance_km = Column(Float)  # Distance from the sonar (in km)
-    bearing_degrees = Column(Float)  # Bearing in degrees
+    distance_km = Column(Float)
+    bearing_degrees = Column(Float)
     heat_temperature_celsius = Column(Float)
-    hostility = Column(Integer)
-    status = Column(String)  # e.g., "Moving", "Stationary"
+    hostility = Column(Boolean)
+    status = Column(String)
     object_type = Column(String)
-    object_shape = Column(String)  # Shape of the detected object (e.g., "Cylindrical")
-    object_material = Column(String)  # Material of the detected object (e.g., "Metal")
-    object_size = Column(Integer)  # Size of the detected object (e.g., m^2 or numeric)
-    speed_knots = Column(Float)  # Speed of the object (in knots)
+    object_shape = Column(String)
+    object_material = Column(String)
+    object_size = Column(Integer)
+    speed_knots = Column(Float)
 
-# WeatherData Model (based on the weather data in the JSON)
+
 class WeatherModel(Base):
     __tablename__ = 'the_weather'
 
@@ -58,11 +59,11 @@ class WeatherModel(Base):
     lat = Column(Float, nullable=True)
     lon = Column(Float, nullable=True)
 
-    temp = Column(Float, nullable=True)  # Fahrenheit
+    temp = Column(Float, nullable=True)
 
-    weather_main = Column(String, nullable=True)  # e.g., "Clouds"
-    weather_description = Column(String, nullable=True)  # e.g., "overcast clouds"
-    weather_icon = Column(String, nullable=True)  # e.g., "04d"
+    weather_main = Column(String, nullable=True)
+    weather_description = Column(String, nullable=True)
+    weather_icon = Column(String, nullable=True)
 
     wind_speed = Column(Float, nullable=True)
     wind_deg = Column(Float, nullable=True)
