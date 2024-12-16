@@ -35,7 +35,7 @@ class Ship:
         self.latitude += (distance * math.cos(heading_rad)) / 111.32
         self.longitude += (distance * math.sin(heading_rad)) / (111.32 * math.cos(math.radians(self.latitude)))
 
-        # Random small changes in speed and direction
+        # Random changes in speed and direction
         self.speed += random.uniform(-0.5, 0.5)
         self.speed = max(1, min(20, self.speed))
         self.heading += random.uniform(-5, 5)

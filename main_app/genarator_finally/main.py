@@ -9,14 +9,17 @@ from sensors.thermal_sensor import ThermalSensor
 from sensors.radar_sensor import RadarSensor
 from sensors.sonar_sensor import SonarSensor
 from sensors.weather_sensor import WeatherSensor
+import paho.mqtt.client as mqtt
+import time
 
 
 class SensorDataManager:
-    def __init__(self):
+    def __init__(self, mqtt_client):
         self.ships: Dict[str, Ship] = {}
         self.submarines: Dict[str, Submarine] = {}
         self.last_mmsi = 0
         self.last_submarine_id = 0
+        self.mqtt_client = mqtt_client
 
         # Initialize initial ships
         for _ in range(3):
@@ -38,7 +41,7 @@ class SensorDataManager:
         self.last_mmsi += 1
         mmsi = f"98765{self.last_mmsi:04d}"
 
-        base_lat, base_lon = 34.0522, -118.2437
+        base_lat, base_lon = 13.166468796564166, 46.752488012095
         lat = base_lat + random.uniform(-0.1, 0.1)
         lon = base_lon + random.uniform(-0.1, 0.1)
 
@@ -47,14 +50,13 @@ class SensorDataManager:
             latitude=lat,
             longitude=lon
         )
-        print(f"New ship created - MMSI: {mmsi} at position: {lat:.4f}, {lon:.4f}")
 
     def _create_new_submarine(self):
         """Create a new submarine with random parameters"""
         self.last_submarine_id += 1
         submarine_id = f"SUB{self.last_submarine_id:04d}"
 
-        base_lat, base_lon = 34.0522, -118.2437
+        base_lat, base_lon = 13.166468796564166, 46.752488012095
         lat = base_lat + random.uniform(-0.1, 0.1)
         lon = base_lon + random.uniform(-0.1, 0.1)
 
@@ -63,7 +65,6 @@ class SensorDataManager:
             latitude=lat,
             longitude=lon
         )
-        print(f"New submarine created - ID: {submarine_id} at position: {lat:.4f}, {lon:.4f}")
 
     def _maybe_add_new_ship(self):
         """Randomly decide whether to add a new ship"""
@@ -72,7 +73,7 @@ class SensorDataManager:
 
     def _maybe_add_new_submarine(self):
         """Randomly decide whether to add a new submarine"""
-        if len(self.submarines) < 3 and random.random() < 0.2:  # 5% chance, max 3 submarines
+        if len(self.submarines) < 3 and random.random() < 0.2:  # 20% chance, max 3 submarines
             self._create_new_submarine()
 
     def _remove_old_ships(self, max_age_seconds: int = 300):
@@ -87,7 +88,6 @@ class SensorDataManager:
 
         for mmsi in ships_to_remove:
             del self.ships[mmsi]
-            print(f"Ship removed - MMSI: {mmsi} (aged out)")
 
     def _remove_old_submarines(self, max_age_seconds: int = 200):
         """Remove submarines that have been in the system too long"""
@@ -101,7 +101,6 @@ class SensorDataManager:
 
         for sub_id in subs_to_remove:
             del self.submarines[sub_id]
-            print(f"Submarine removed - ID: {sub_id} (aged out)")
 
     def update_vehicles(self, seconds_elapsed: float):
         """Update all vehicles positions and maybe add/remove vehicles"""
@@ -120,37 +119,85 @@ class SensorDataManager:
         self._remove_old_ships()
         self._remove_old_submarines()
 
-    def get_all_sensor_data(self, observer_lat: float, observer_lon: float) -> dict:
-        """Get data from all sensors"""
-        return {
-            sensor_name: sensor.generate_data(
+    def publish_sensor_data(self, observer_lat: float, observer_lon: float):
+        """Get data from each sensor and publish to MQTT"""
+        for sensor_name, sensor in self.sensors.items():
+            # Get sensor data
+            data = sensor.generate_data(
                 observer_lat,
                 observer_lon,
                 self.ships,
                 self.submarines if sensor_name == 'sonar' else None
             )
-            for sensor_name, sensor in self.sensors.items()
-        }
+
+            # Create message with metadata
+            message = {
+                "type": sensor_name,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "data": data
+            }
+
+            # Publish to MQTT
+            topic = f"sensors/{sensor_name}/{data['sensor_id']}"
+            self.mqtt_client.publish(topic, json.dumps(message), qos=1)
+
+
+class MQTTManager:
+    def __init__(self, broker="localhost", port=1883):
+        # Initialize MQTT client
+        self.client = mqtt.Client()
+        self.broker = broker
+        self.port = port
+
+        # Setup MQTT callbacks
+        self.client.on_connect = self.on_connect
+
+    def on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT broker")
+        else:
+            print(f"Failed to connect to MQTT broker with code: {rc}")
+
+    def start(self):
+        """Connect to MQTT broker"""
+        try:
+            self.client.connect(self.broker, self.port, 60)
+            self.client.loop_start()
+        except Exception as e:
+            print(f"Failed to connect to MQTT broker: {e}")
+            raise
+
+    def stop(self):
+        """Stop MQTT client"""
+        self.client.loop_stop()
+        self.client.disconnect()
 
 
 async def main():
-    manager = SensorDataManager()
-
     try:
+        # Initialize MQTT
+        mqtt_manager = MQTTManager()
+        mqtt_manager.start()
+
+        # Initialize sensor manager
+        manager = SensorDataManager(mqtt_manager.client)
+
         while True:
-            data = manager.get_all_sensor_data(34.0522, -118.2437)
+            # Publish sensor data
+            manager.publish_sensor_data(13.166468796564166, 46.752488012095)
 
-            # Print sensor data in a nice format
-            print(json.dumps(data, indent=2))
-
-            # Update and wait
+            # Update vehicles
             manager.update_vehicles(5)
-            await asyncio.sleep(5)
+
+            # Wait before next update
+            await asyncio.sleep(1)
 
     except KeyboardInterrupt:
         print("\nStopping data generation...")
+        mqtt_manager.stop()
     except Exception as e:
         print(f"\nError occurred: {e}")
+        mqtt_manager.stop()
 
 
 if __name__ == "__main__":

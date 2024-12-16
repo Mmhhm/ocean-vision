@@ -1,0 +1,292 @@
+Index: main_app/kafka_service/sonar_consumer.py
+===================================================================
+diff --git a/main_app/kafka_service/sonar_consumer.py b/main_app/geographic_service/analyst_geographic.py
+rename from main_app/kafka_service/sonar_consumer.py
+rename to main_app/geographic_service/analyst_geographic.py
+--- a/main_app/kafka_service/sonar_consumer.py	(revision 0f9058bade832e41c5b73f4c49b6f718a4ec9651)
++++ b/main_app/geographic_service/analyst_geographic.py	(date 1733955632192)
+@@ -1,0 +1,280 @@
++import pandas as pd
++import numpy as np
++import matplotlib.pyplot as plt
++import seaborn as sns
++from shapely.geometry import Point
++import folium
++from math import radians, sin, cos, sqrt, atan2
++import os
++
++
++def create_dataframe(json_data_list):
++    """Convert JSON data to DataFrame with proper handling of both ships and submarines"""
++    # Extract detected_object data from each JSON entry
++    objects_data = []
++    for entry in json_data_list:
++        obj_data = entry['data']['detected_object'].copy()
++        obj_data['object_type'] = entry['data']['type']
++        objects_data.append(obj_data)
++
++    df = pd.DataFrame(objects_data)
++
++    # Ensure consistent column names
++    if 'mmsi' in df.columns:
++        df['object_id'] = df['mmsi']
++    elif 'submarine_id' in df.columns:
++        df['object_id'] = df['submarine_id']
++
++    return df
++
++
++def calculate_distance(lat1, lon1, lat2, lon2):
++    """Calculate distance between two points using Haversine formula"""
++    R = 6371  # Earth's radius in kilometers
++
++    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
++    dlat = lat2 - lat1
++    dlon = lon2 - lon1
++
++    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
++    c = 2 * atan2(sqrt(a), sqrt(1 - a))
++    distance = R * c
++
++    return distance
++
++
++def analyze_spatial_density(df):
++    """Analyze spatial density and clustering of maritime objects"""
++    distances = []
++    object_pairs = []
++
++    for i, row1 in df.iterrows():
++        for j, row2 in df.iterrows():
++            if i < j:  # Avoid duplicates and self-comparison
++                dist = calculate_distance(
++                    row1['latitude'], row1['longitude'],
++                    row2['latitude'], row2['longitude']
++                )
++                distances.append(dist)
++                object_pairs.append((row1['object_id'], row2['object_id']))
++
++    return pd.DataFrame({
++        'object_pair': object_pairs,
++        'distance_km': distances
++    })
++
++
++def create_map_visualization(df):
++    """Create geographical visualization with enhanced features"""
++    # Create base map centered on mean coordinates
++    center_lat = df['latitude'].mean()
++    center_lon = df['longitude'].mean()
++    m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
++
++    # Add objects to map
++    for idx, row in df.iterrows():
++        # Determine color based on danger level and object type
++        if row['danger'] > 60:
++            color = 'red'
++        elif row['danger'] > 30:
++            color = 'orange'
++        else:
++            color = 'blue' if row['object_type'] == 'ship' else 'purple'
++
++        # Create popup content
++        popup_content = f"""
++            Type: {row['object_type']}<br>
++            ID: {row['object_id']}<br>
++            Danger: {row['danger']:.2f}<br>
++            Speed: {row['speed_knots']} knots<br>
++            Distance: {row['distance_km']} km<br>
++            Status: {row['status']}
++        """
++
++        # Add marker with custom icon based on object type
++        folium.CircleMarker(
++            location=[row['latitude'], row['longitude']],
++            radius=8,
++            color=color,
++            fill=True,
++            popup=folium.Popup(popup_content, max_width=200),
++            tooltip=f"{row['object_type'].capitalize()} - Danger: {row['danger']:.2f}"
++        ).add_to(m)
++
++        # Add direction vector based on bearing
++        if 'bearing_degrees' in row:
++            bearing_rad = np.radians(row['bearing_degrees'])
++            end_lat = row['latitude'] + 0.02 * np.sin(bearing_rad)
++            end_lon = row['longitude'] + 0.02 * np.cos(bearing_rad)
++
++            folium.PolyLine(
++                locations=[[row['latitude'], row['longitude']], [end_lat, end_lon]],
++                color=color,
++                weight=2,
++                opacity=0.8,
++                tooltip=f"Bearing: {row['bearing_degrees']}°"
++            ).add_to(m)
++
++    # Add legend
++    legend_html = '''
++    <div style="position: fixed; 
++                bottom: 50px; right: 50px; width: 150px; height: 130px; 
++                border:2px solid grey; z-index:9999; background-color:white;
++                opacity:0.8; padding:10px;">
++                <h4>Legend</h4>
++                <p><span style="color:red;">●</span> High Risk (>60)</p>
++                <p><span style="color:orange;">●</span> Medium Risk (30-60)</p>
++                <p><span style="color:blue;">●</span> Low Risk Ship</p>
++                <p><span style="color:purple;">●</span> Low Risk Submarine</p>
++    </div>
++    '''
++    m.get_root().html.add_child(folium.Element(legend_html))
++
++    return m
++
++
++def analyze_risk_zones(df):
++    """Analyze risk zones with enhanced metrics"""
++    risk_analysis = {
++        'high_risk_areas': [],
++        'object_clusters': [],
++        'risk_statistics': {},
++        'type_statistics': {}
++    }
++
++    # Find areas with high concentration of dangerous objects
++    high_risk_objects = df[df['danger'] > 30]
++    if not high_risk_objects.empty:
++        risk_analysis['high_risk_areas'] = list(zip(
++            high_risk_objects['latitude'],
++            high_risk_objects['longitude']
++        ))
++
++    # Basic risk statistics
++    risk_analysis['risk_statistics'] = {
++        'mean_danger': df['danger'].mean(),
++        'max_danger': df['danger'].max(),
++        'high_risk_count': len(high_risk_objects),
++        'total_objects': len(df)
++    }
++
++    # Statistics by object type
++    for obj_type in df['object_type'].unique():
++        type_df = df[df['object_type'] == obj_type]
++        risk_analysis['type_statistics'][obj_type] = {
++            'count': len(type_df),
++            'mean_danger': type_df['danger'].mean(),
++            'max_danger': type_df['danger'].max(),
++            'high_risk_count': len(type_df[type_df['danger'] > 30])
++        }
++
++    return risk_analysis
++
++
++def create_statistical_plots(df):
++    """Create statistical visualizations with enhanced features"""
++    # Set the style using seaborn
++    sns.set_theme()
++
++    # Create figure with multiple subplots
++    fig, axes = plt.subplots(2, 2, figsize=(15, 15))
++
++    # Color palette for object types
++    colors = {'ship': 'blue', 'submarine': 'purple'}
++
++    # Danger level distribution by object type
++    sns.histplot(data=df, x='danger', hue='object_type', multiple="stack",
++                 palette=colors, ax=axes[0, 0])
++    axes[0, 0].set_title('Distribution of Danger Levels by Object Type')
++    axes[0, 0].set_xlabel('Danger Level')
++    axes[0, 0].set_ylabel('Count')
++
++    # Speed vs Distance scatter plot
++    sns.scatterplot(data=df, x='distance_km', y='speed_knots',
++                    hue='object_type', size='danger',
++                    palette=colors, ax=axes[0, 1])
++    axes[0, 1].set_title('Speed vs Distance by Object Type')
++    axes[0, 1].set_xlabel('Distance (km)')
++    axes[0, 1].set_ylabel('Speed (knots)')
++
++    # Bearing distribution
++    sns.histplot(data=df, x='bearing_degrees', hue='object_type',
++                 multiple="stack", palette=colors, ax=axes[1, 0])
++    axes[1, 0].set_title('Distribution of Bearings by Object Type')
++    axes[1, 0].set_xlabel('Bearing (degrees)')
++    axes[1, 0].set_ylabel('Count')
++
++    # Size vs Danger scatter plot
++    sns.scatterplot(data=df, x='object_size', y='danger',
++                    hue='object_type', palette=colors, ax=axes[1, 1])
++    axes[1, 1].set_title('Object Size vs Danger Level')
++    axes[1, 1].set_xlabel('Object Size')
++    axes[1, 1].set_ylabel('Danger Level')
++
++    plt.tight_layout()
++    return fig
++
++def perform_maritime_analysis(json_data_list):
++    """Main analysis function with enhanced output handling"""
++    # Create DataFrame
++    df = create_dataframe(json_data_list)
++
++    # Perform analyses
++    spatial_density = analyze_spatial_density(df)
++    risk_zones = analyze_risk_zones(df)
++
++    # Create visualizations
++    map_viz = create_map_visualization(df)
++    statistical_plots = create_statistical_plots(df)
++
++    # Ensure output directory exists
++    output_dir = 'maritime_analysis_output'
++    os.makedirs(output_dir, exist_ok=True)
++
++    # Save visualizations
++    map_viz.save(os.path.join(output_dir, 'maritime_map.html'))
++    statistical_plots.savefig(os.path.join(output_dir, 'statistical_analysis.png'))
++
++    # Save analysis results
++    analysis_summary = {
++        'dataframe': df.to_dict(orient='records'),
++        'spatial_density': spatial_density.to_dict(orient='records'),
++        'risk_zones': risk_zones,
++        'timestamp': pd.Timestamp.now().isoformat()
++    }
++
++    return {
++        'dataframe': df,
++        'spatial_density': spatial_density,
++        'risk_zones': risk_zones,
++        'map': map_viz,
++        'plots': statistical_plots,
++        'summary': analysis_summary
++    }
++
++
++if __name__ == "__main__":
++    # Test with sample data if run directly
++    sample_data = [
++        {
++            "data": {
++                "type": "ship",
++                "timestamp": "2024-12-11T17:30:00",
++                "detected_object": {
++                    "mmsi": "987650019",
++                    "distance_km": 14.3,
++                    "bearing_degrees": 132,
++                    "latitude": 13.0808,
++                    "longitude": 46.8506,
++                    "status": "Underway",
++                    "speed_knots": 10.4,
++                    "object_size": 455,
++                    "danger": 12.005,
++                    "is_hostile": False
++                }
++            }
++        }
++    ]
++
++    results = perform_maritime_analysis(sample_data)
++    print("Analysis completed successfully.")
+\ No newline at end of file
+diff --git a/main_app/kafka_service/radar_consumer.py b/main_app/geographic_service/__init__.py
+rename from main_app/kafka_service/radar_consumer.py
+rename to main_app/geographic_service/__init__.py

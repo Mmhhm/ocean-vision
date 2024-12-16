@@ -1,0 +1,465 @@
+Index: main_app/kafka_service/mqtt_listener.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># import paho.mqtt.client as mqtt\n# from kafka import KafkaProducer\n# import json\n#\n#\n# class SensorKafkaSubscriber:\n#     def __init__(self, mqtt_broker=\"localhost\", mqtt_port=1883, kafka_broker=\"localhost:9092\"):\n#         # MQTT setup\n#         self.client = mqtt.Client()\n#         self.client.on_connect = self.on_connect\n#         self.client.on_message = self.on_message\n#\n#         # Kafka setup\n#         self.producer = KafkaProducer(\n#             bootstrap_servers=[kafka_broker],\n#             value_serializer=lambda x: json.dumps(x).encode('utf-8')\n#         )\n#\n#         # Kafka topics mapping\n#         self.kafka_topics = {\n#             'thermal': 'thermal_sensor_data',\n#             'radar': 'radar_sensor_data',\n#             'sonar': 'sonar_sensor_data',\n#             'weather': 'weather_sensor_data'\n#         }\n#\n#     def on_connect(self, client, userdata, flags, rc):\n#         print(\"Connected to MQTT broker with result code \" + str(rc))\n#         # Subscribe to all sensor topics\n#         self.client.subscribe(\"sensors/#\")\n#\n#     def on_message(self, client, userdata, msg):\n#         try:\n#             # Parse the JSON message\n#             data = json.loads(msg.payload)\n#             sensor_type = data['type']\n#\n#             # Get corresponding Kafka topic\n#             kafka_topic = self.kafka_topics.get(sensor_type)\n#\n#             if kafka_topic:\n#                 # Send to Kafka\n#                 self.producer.send(kafka_topic, value=data)\n#                 self.producer.flush()\n#                 print(f\"Sent {sensor_type} data to Kafka topic: {kafka_topic}\")\n#\n#                 # Optional: Print the data for debugging\n#                 print(f\"Data: {json.dumps(data, indent=2)}\")\n#\n#         except Exception as e:\n#             print(f\"Error processing message: {e}\")\n#\n#     def start(self):\n#         try:\n#             print(\"Connecting to MQTT broker...\")\n#             self.client.connect(\"localhost\", 1883, 60)\n#             print(\"Starting subscriber loop...\")\n#             self.client.loop_forever()\n#         except KeyboardInterrupt:\n#             print(\"\\nSubscriber stopped\")\n#             self.producer.close()\n#         except Exception as e:\n#             print(f\"Error: {e}\")\n#             self.producer.close()\n#\n#\n# if __name__ == \"__main__\":\n#     # You can customize the Kafka broker address here\n#     subscriber = SensorKafkaSubscriber(kafka_broker=\"localhost:9092\")\n#     subscriber.start()\n\n\nfrom paho.mqtt import client as mqtt\nfrom kafka import KafkaProducer\nimport json\nfrom typing import Dict\n\n\nclass MQTTtoKafkaBridge:\n    \"\"\"Bridge for forwarding MQTT sensor messages to Kafka topics\"\"\"\n\n    # Mapping of sensor types to Kafka topics\n    TOPICS: Dict[str, str] = {\n        'thermal': 'thermal_sensor_data',\n        'radar': 'radar_sensor_data',\n        'sonar': 'sonar_sensor_data',\n        'weather': 'weather_sensor_data'\n    }\n\n    def __init__(self):\n        # Initialize Kafka producer\n        self.producer = KafkaProducer(\n            bootstrap_servers='localhost:9092',\n            value_serializer=self._serialize_json\n        )\n\n        # Initialize MQTT client\n        self.mqtt_client = mqtt.Client()\n        self.mqtt_client.on_connect = self._on_mqtt_connect\n        self.mqtt_client.on_message = self._on_mqtt_message\n\n    @staticmethod\n    def _serialize_json(data: dict) -> bytes:\n        \"\"\"Serialize data to JSON bytes\"\"\"\n        return json.dumps(data).encode('utf-8')\n\n    def _on_mqtt_connect(self, client, userdata, flags, rc):\n        \"\"\"Handle MQTT connection\"\"\"\n        if rc == 0:\n            print(\"Connected to MQTT broker\")\n            client.subscribe(\"sensors/#\")\n        else:\n            print(f\"Failed to connect to MQTT broker with code: {rc}\")\n\n    def _on_mqtt_message(self, client, userdata, msg):\n        \"\"\"Process incoming MQTT messages and forward to Kafka\"\"\"\n        try:\n            # Parse message\n            data = json.loads(msg.payload)\n            sensor_type = data['type']\n\n            # Get corresponding Kafka topic\n            kafka_topic = self.TOPICS.get(sensor_type)\n            if kafka_topic:\n                # Forward to Kafka\n                self.producer.send(kafka_topic, data)\n                print(f\"Forwarded {sensor_type} data to Kafka topic: {kafka_topic}\")\n\n        except json.JSONDecodeError:\n            print(f\"Invalid JSON message received: {msg.payload}\")\n        except KeyError:\n            print(f\"Message missing sensor type: {data}\")\n        except Exception as e:\n            print(f\"Error processing message: {e}\")\n\n    def run(self):\n        \"\"\"Start the bridge\"\"\"\n        try:\n            print(\"Starting MQTT to Kafka bridge...\")\n            self.mqtt_client.connect(\"localhost\", 1883)\n            self.mqtt_client.loop_forever()\n\n        except KeyboardInterrupt:\n            print(\"\\nStopping bridge...\")\n        finally:\n            self.producer.close()\n            self.mqtt_client.disconnect()\n\n\nif __name__ == \"__main__\":\n    bridge = MQTTtoKafkaBridge()\n    bridge.run()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main_app/kafka_service/mqtt_listener.py b/main_app/kafka_service/mqtt_listener.py
+--- a/main_app/kafka_service/mqtt_listener.py	(revision 0f9058bade832e41c5b73f4c49b6f718a4ec9651)
++++ b/main_app/kafka_service/mqtt_listener.py	(date 1733952581752)
+@@ -1,75 +1,3 @@
+-# import paho.mqtt.client as mqtt
+-# from kafka import KafkaProducer
+-# import json
+-#
+-#
+-# class SensorKafkaSubscriber:
+-#     def __init__(self, mqtt_broker="localhost", mqtt_port=1883, kafka_broker="localhost:9092"):
+-#         # MQTT setup
+-#         self.client = mqtt.Client()
+-#         self.client.on_connect = self.on_connect
+-#         self.client.on_message = self.on_message
+-#
+-#         # Kafka setup
+-#         self.producer = KafkaProducer(
+-#             bootstrap_servers=[kafka_broker],
+-#             value_serializer=lambda x: json.dumps(x).encode('utf-8')
+-#         )
+-#
+-#         # Kafka topics mapping
+-#         self.kafka_topics = {
+-#             'thermal': 'thermal_sensor_data',
+-#             'radar': 'radar_sensor_data',
+-#             'sonar': 'sonar_sensor_data',
+-#             'weather': 'weather_sensor_data'
+-#         }
+-#
+-#     def on_connect(self, client, userdata, flags, rc):
+-#         print("Connected to MQTT broker with result code " + str(rc))
+-#         # Subscribe to all sensor topics
+-#         self.client.subscribe("sensors/#")
+-#
+-#     def on_message(self, client, userdata, msg):
+-#         try:
+-#             # Parse the JSON message
+-#             data = json.loads(msg.payload)
+-#             sensor_type = data['type']
+-#
+-#             # Get corresponding Kafka topic
+-#             kafka_topic = self.kafka_topics.get(sensor_type)
+-#
+-#             if kafka_topic:
+-#                 # Send to Kafka
+-#                 self.producer.send(kafka_topic, value=data)
+-#                 self.producer.flush()
+-#                 print(f"Sent {sensor_type} data to Kafka topic: {kafka_topic}")
+-#
+-#                 # Optional: Print the data for debugging
+-#                 print(f"Data: {json.dumps(data, indent=2)}")
+-#
+-#         except Exception as e:
+-#             print(f"Error processing message: {e}")
+-#
+-#     def start(self):
+-#         try:
+-#             print("Connecting to MQTT broker...")
+-#             self.client.connect("localhost", 1883, 60)
+-#             print("Starting subscriber loop...")
+-#             self.client.loop_forever()
+-#         except KeyboardInterrupt:
+-#             print("\nSubscriber stopped")
+-#             self.producer.close()
+-#         except Exception as e:
+-#             print(f"Error: {e}")
+-#             self.producer.close()
+-#
+-#
+-# if __name__ == "__main__":
+-#     # You can customize the Kafka broker address here
+-#     subscriber = SensorKafkaSubscriber(kafka_broker="localhost:9092")
+-#     subscriber.start()
+-
+-
+ from paho.mqtt import client as mqtt
+ from kafka import KafkaProducer
+ import json
+Index: main_app/kafka_service/kafka_listener.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\nfrom kafka import KafkaConsumer\nimport json\nfrom typing import List, Dict, Tuple\nfrom datetime import datetime\nimport math\n\n\nclass MaritimeDetector:\n    def __init__(self, topics: List[str], bootstrap_servers: str = 'localhost:9092'):\n        self.consumer = KafkaConsumer(\n            *topics,\n            bootstrap_servers=bootstrap_servers,\n            auto_offset_reset='latest',\n            enable_auto_commit=True,\n            value_deserializer=lambda x: json.loads(x.decode('utf-8'))\n        )\n        self.ships_data = {}\n        self.submarines_data = {}\n        print(f\"Subscribed to topics: {topics}\")\n\n    def calculate_threat_levels(self, obj_data: Dict) -> Tuple[float, bool]:\n        \"\"\"\n        Calculate detailed threat level based on multiple parameters\n        Returns: (danger_level, is_hostile)\n        \"\"\"\n        danger_score = 0.0\n        weights = {\n            'temperature': 0.25,\n            'distance': 0.20,\n            'speed': 0.15,\n            'size': 0.15,\n            'bearing': 0.15,\n            'status': 0.10\n        }\n\n        # Temperature analysis\n        temp = obj_data.get('heat_temperature_celsius')\n        if temp is not None:\n            temp_score = min(100, max(0, (temp - 35) * 5))  # Scale from 35-55°C\n            danger_score += temp_score * weights['temperature']\n\n        # Distance analysis\n        distance = obj_data.get('distance_km')\n        if distance is not None:\n            distance_score = min(100, max(0, (15 - distance) * 10))  # Inverse scale from 0-15km\n            danger_score += distance_score * weights['distance']\n\n        # Speed analysis\n        speed = obj_data.get('speed_knots')\n        if speed is not None:\n            speed_score = min(100, max(0, (speed - 5) * 8))  # Scale from 5-17.5 knots\n            danger_score += speed_score * weights['speed']\n\n        # Size analysis\n        size = obj_data.get('object_size')\n        if size is not None:\n            # Military ships typically 400-800\n            size_factor = abs(600 - size) / 200  # Distance from ideal military size\n            size_score = min(100, max(0, (1 - size_factor) * 100))\n            danger_score += size_score * weights['size']\n\n        # Bearing analysis\n        bearing = obj_data.get('bearing_degrees')\n        if bearing is not None:\n            # Consider bearings outside commercial routes (120-240) more dangerous\n            bearing_score = 0\n            if bearing < 120 or bearing > 240:\n                angle_diff = min(abs(bearing - 120), abs(bearing - 240))\n                bearing_score = min(100, (angle_diff / 1.2))\n            danger_score += bearing_score * weights['bearing']\n\n        # Status analysis\n        status = obj_data.get('status', '').lower()\n        if status == 'stationary':\n            danger_score += 100 * weights['status']\n        elif status == 'unknown':\n            danger_score += 50 * weights['status']\n\n        # Round to 3 decimal places\n        danger_score = round(danger_score, 3)\n\n        # Determine hostility (true if multiple high-risk factors)\n        high_risk_count = sum([\n            1 for score in [temp_score if temp is not None else 0,\n                            distance_score if distance is not None else 0,\n                            speed_score if speed is not None else 0,\n                            size_score if size is not None else 0,\n                            bearing_score if bearing is not None else 0]\n            if score > 70\n        ])\n\n        return danger_score, high_risk_count >= 3\n\n    def calculate_submarine_threat(self, sub_data: Dict) -> Tuple[float, bool]:\n        \"\"\"\n        Calculate detailed submarine threat level\n        Returns: (danger_level, is_hostile)\n        \"\"\"\n        danger_score = 0.0\n        weights = {\n            'depth': 0.30,\n            'distance': 0.25,\n            'speed': 0.20,\n            'size': 0.15,\n            'bearing': 0.10\n        }\n\n        # Depth analysis\n        depth = sub_data.get('depth_meters')\n        if depth is not None:\n            if depth < 50:  # Very shallow\n                depth_score = 100\n            elif depth < 100:  # Periscope depth\n                depth_score = 80\n            else:\n                depth_score = max(0, 100 - (depth - 100) * 0.5)\n            danger_score += depth_score * weights['depth']\n\n        # Distance analysis\n        distance = sub_data.get('distance_km')\n        if distance is not None:\n            distance_score = min(100, max(0, (12 - distance) * 10))\n            danger_score += distance_score * weights['distance']\n\n        # Speed analysis\n        speed = sub_data.get('speed_knots')\n        if speed is not None:\n            if speed < 1:  # Stationary\n                speed_score = 90\n            else:\n                speed_score = min(100, max(0, speed * 15))\n            danger_score += speed_score * weights['speed']\n\n        # Size analysis\n        size = sub_data.get('object_size')\n        if size is not None:\n            # Typical military submarine size range\n            size_factor = abs(550 - size) / 150\n            size_score = min(100, max(0, (1 - size_factor) * 100))\n            danger_score += size_score * weights['size']\n\n        # Bearing analysis\n        bearing = sub_data.get('bearing_degrees')\n        if bearing is not None:\n            # Consider unusual approach angles more dangerous\n            bearing_score = min(100, abs(math.sin(math.radians(bearing))) * 100)\n            danger_score += bearing_score * weights['bearing']\n\n        # Round to 3 decimal places\n        danger_score = round(danger_score, 3)\n\n        # Determine hostility\n        high_risk_count = sum([\n            1 for score in [depth_score if depth is not None else 0,\n                            distance_score if distance is not None else 0,\n                            speed_score if speed is not None else 0,\n                            size_score if size is not None else 0,\n                            bearing_score if bearing is not None else 0]\n            if score > 70\n        ])\n\n        return danger_score, high_risk_count >= 3\n\n    def update_object_data(self, sensor_type: str, data: Dict, timestamp: str):\n        \"\"\"Update object data from different sensors\"\"\"\n        detected_objects = data.get('detected_objects', [])\n\n        for obj in detected_objects:\n            if sensor_type == 'radar' and obj.get('object_type') == 'Ship':\n                mmsi = obj.get('mmsi')\n                if mmsi:\n                    danger, is_hostile = self.calculate_threat_levels(obj)\n                    self.ships_data[mmsi] = {\n                        \"data\": {\n                            \"type\": \"ship\",\n                            \"timestamp\": timestamp,\n                            \"detected_object\": {\n                                \"mmsi\": mmsi,\n                                \"distance_km\": obj.get('distance_km'),\n                                \"bearing_degrees\": obj.get('bearing_degrees'),\n                                \"latitude\": obj.get('latitude'),\n                                \"longitude\": obj.get('longitude'),\n                                \"status\": obj.get('status'),\n                                \"speed_knots\": obj.get('speed_knots'),\n                                \"object_size\": obj.get('object_size'),\n                                \"heat_temperature_celsius\": None,\n                                \"danger\": danger,\n                                \"is_hostile\": is_hostile\n                            }\n                        }\n                    }\n\n            elif sensor_type == 'thermal':\n                mmsi = obj.get('mmsi')\n                if mmsi and mmsi in self.ships_data:\n                    self.ships_data[mmsi][\"data\"][\"detected_object\"][\"heat_temperature_celsius\"] = obj.get(\n                        'heat_temperature_celsius')\n                    # Recalculate with new temperature data\n                    danger, is_hostile = self.calculate_threat_levels(self.ships_data[mmsi][\"data\"][\"detected_object\"])\n                    self.ships_data[mmsi][\"data\"][\"detected_object\"].update({\n                        \"danger\": danger,\n                        \"is_hostile\": is_hostile\n                    })\n\n            elif sensor_type == 'sonar':\n                submarine_id = obj.get('submarine_id')\n                if submarine_id:\n                    danger, is_hostile = self.calculate_submarine_threat(obj)\n                    self.submarines_data[submarine_id] = {\n                        \"data\": {\n                            \"type\": \"submarine\",\n                            \"timestamp\": timestamp,\n                            \"detected_object\": {\n                                \"submarine_id\": submarine_id,\n                                \"object_type\": \"Submarine\",\n                                \"depth_meters\": obj.get('depth_meters'),\n                                \"distance_km\": obj.get('distance_km'),\n                                \"bearing_degrees\": obj.get('bearing_degrees'),\n                                \"latitude\": obj.get('latitude'),\n                                \"longitude\": obj.get('longitude'),\n                                \"speed_knots\": obj.get('speed_knots'),\n                                \"object_shape\": obj.get('object_shape', \"Cylindrical\"),\n                                \"object_material\": obj.get('object_material', \"Metal\"),\n                                \"object_size\": obj.get('object_size'),\n                                \"status\": obj.get('status', \"Moving\"),\n                                \"danger\": danger,\n                                \"is_hostile\": is_hostile\n                            }\n                        }\n                    }\n\n\ndef main():\n    topics = [\n        'thermal_sensor_data',\n        'radar_sensor_data',\n        'sonar_sensor_data'\n    ]\n\n    print(\"Starting Maritime Detector...\")\n    detector = MaritimeDetector(topics)\n\n    try:\n        for message in detector.consumer:\n            sensor_type = message.value.get('type', message.topic.split('_')[0])\n            data = message.value.get('data', {})\n            timestamp = message.value.get('timestamp')\n\n            detector.update_object_data(sensor_type, data, timestamp)\n\n            print(\"\\n=== Current Maritime Status ===\")\n            if detector.ships_data:\n                print(\"\\nShips:\")\n                for ship_data in detector.ships_data.values():\n                    print(json.dumps(ship_data, indent=2))\n\n            if detector.submarines_data:\n                print(\"\\nSubmarines:\")\n                for sub_data in detector.submarines_data.values():\n                    print(json.dumps(sub_data, indent=2))\n\n    except KeyboardInterrupt:\n        print(\"\\nStopping detector...\")\n    finally:\n        detector.consumer.close()\n\nif __name__ == \"__main__\":\n    main()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main_app/kafka_service/kafka_listener.py b/main_app/kafka_service/kafka_listener.py
+--- a/main_app/kafka_service/kafka_listener.py	(revision 0f9058bade832e41c5b73f4c49b6f718a4ec9651)
++++ b/main_app/kafka_service/kafka_listener.py	(date 1733955454353)
+@@ -1,9 +1,282 @@
++#
++# from kafka import KafkaConsumer
++# import json
++# from typing import List, Dict, Tuple
++# from datetime import datetime
++# import math
++#
++#
++# class MaritimeDetector:
++#     def __init__(self, topics: List[str], bootstrap_servers: str = 'localhost:9092'):
++#         self.consumer = KafkaConsumer(
++#             *topics,
++#             bootstrap_servers=bootstrap_servers,
++#             auto_offset_reset='latest',
++#             enable_auto_commit=True,
++#             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
++#         )
++#         self.ships_data = {}
++#         self.submarines_data = {}
++#         print(f"Subscribed to topics: {topics}")
++#
++#     def calculate_threat_levels(self, obj_data: Dict) -> Tuple[float, bool]:
++#         """
++#         Calculate detailed threat level based on multiple parameters
++#         Returns: (danger_level, is_hostile)
++#         """
++#         danger_score = 0.0
++#         weights = {
++#             'temperature': 0.25,
++#             'distance': 0.20,
++#             'speed': 0.15,
++#             'size': 0.15,
++#             'bearing': 0.15,
++#             'status': 0.10
++#         }
++#
++#         # Temperature analysis
++#         temp = obj_data.get('heat_temperature_celsius')
++#         if temp is not None:
++#             temp_score = min(100, max(0, (temp - 35) * 5))  # Scale from 35-55°C
++#             danger_score += temp_score * weights['temperature']
++#
++#         # Distance analysis
++#         distance = obj_data.get('distance_km')
++#         if distance is not None:
++#             distance_score = min(100, max(0, (15 - distance) * 10))  # Inverse scale from 0-15km
++#             danger_score += distance_score * weights['distance']
++#
++#         # Speed analysis
++#         speed = obj_data.get('speed_knots')
++#         if speed is not None:
++#             speed_score = min(100, max(0, (speed - 5) * 8))  # Scale from 5-17.5 knots
++#             danger_score += speed_score * weights['speed']
++#
++#         # Size analysis
++#         size = obj_data.get('object_size')
++#         if size is not None:
++#             # Military ships typically 400-800
++#             size_factor = abs(600 - size) / 200  # Distance from ideal military size
++#             size_score = min(100, max(0, (1 - size_factor) * 100))
++#             danger_score += size_score * weights['size']
++#
++#         # Bearing analysis
++#         bearing = obj_data.get('bearing_degrees')
++#         if bearing is not None:
++#             # Consider bearings outside commercial routes (120-240) more dangerous
++#             bearing_score = 0
++#             if bearing < 120 or bearing > 240:
++#                 angle_diff = min(abs(bearing - 120), abs(bearing - 240))
++#                 bearing_score = min(100, (angle_diff / 1.2))
++#             danger_score += bearing_score * weights['bearing']
++#
++#         # Status analysis
++#         status = obj_data.get('status', '').lower()
++#         if status == 'stationary':
++#             danger_score += 100 * weights['status']
++#         elif status == 'unknown':
++#             danger_score += 50 * weights['status']
++#
++#         # Round to 3 decimal places
++#         danger_score = round(danger_score, 3)
++#
++#         # Determine hostility (true if multiple high-risk factors)
++#         high_risk_count = sum([
++#             1 for score in [temp_score if temp is not None else 0,
++#                             distance_score if distance is not None else 0,
++#                             speed_score if speed is not None else 0,
++#                             size_score if size is not None else 0,
++#                             bearing_score if bearing is not None else 0]
++#             if score > 70
++#         ])
++#
++#         return danger_score, high_risk_count >= 3
++#
++#     def calculate_submarine_threat(self, sub_data: Dict) -> Tuple[float, bool]:
++#         """
++#         Calculate detailed submarine threat level
++#         Returns: (danger_level, is_hostile)
++#         """
++#         danger_score = 0.0
++#         weights = {
++#             'depth': 0.30,
++#             'distance': 0.25,
++#             'speed': 0.20,
++#             'size': 0.15,
++#             'bearing': 0.10
++#         }
++#
++#         # Depth analysis
++#         depth = sub_data.get('depth_meters')
++#         if depth is not None:
++#             if depth < 50:  # Very shallow
++#                 depth_score = 100
++#             elif depth < 100:  # Periscope depth
++#                 depth_score = 80
++#             else:
++#                 depth_score = max(0, 100 - (depth - 100) * 0.5)
++#             danger_score += depth_score * weights['depth']
++#
++#         # Distance analysis
++#         distance = sub_data.get('distance_km')
++#         if distance is not None:
++#             distance_score = min(100, max(0, (12 - distance) * 10))
++#             danger_score += distance_score * weights['distance']
++#
++#         # Speed analysis
++#         speed = sub_data.get('speed_knots')
++#         if speed is not None:
++#             if speed < 1:  # Stationary
++#                 speed_score = 90
++#             else:
++#                 speed_score = min(100, max(0, speed * 15))
++#             danger_score += speed_score * weights['speed']
++#
++#         # Size analysis
++#         size = sub_data.get('object_size')
++#         if size is not None:
++#             # Typical military submarine size range
++#             size_factor = abs(550 - size) / 150
++#             size_score = min(100, max(0, (1 - size_factor) * 100))
++#             danger_score += size_score * weights['size']
++#
++#         # Bearing analysis
++#         bearing = sub_data.get('bearing_degrees')
++#         if bearing is not None:
++#             # Consider unusual approach angles more dangerous
++#             bearing_score = min(100, abs(math.sin(math.radians(bearing))) * 100)
++#             danger_score += bearing_score * weights['bearing']
++#
++#         # Round to 3 decimal places
++#         danger_score = round(danger_score, 3)
++#
++#         # Determine hostility
++#         high_risk_count = sum([
++#             1 for score in [depth_score if depth is not None else 0,
++#                             distance_score if distance is not None else 0,
++#                             speed_score if speed is not None else 0,
++#                             size_score if size is not None else 0,
++#                             bearing_score if bearing is not None else 0]
++#             if score > 70
++#         ])
++#
++#         return danger_score, high_risk_count >= 3
++#
++#     def update_object_data(self, sensor_type: str, data: Dict, timestamp: str):
++#         """Update object data from different sensors"""
++#         detected_objects = data.get('detected_objects', [])
++#
++#         for obj in detected_objects:
++#             if sensor_type == 'radar' and obj.get('object_type') == 'Ship':
++#                 mmsi = obj.get('mmsi')
++#                 if mmsi:
++#                     danger, is_hostile = self.calculate_threat_levels(obj)
++#                     self.ships_data[mmsi] = {
++#                         "data": {
++#                             "type": "ship",
++#                             "timestamp": timestamp,
++#                             "detected_object": {
++#                                 "mmsi": mmsi,
++#                                 "distance_km": obj.get('distance_km'),
++#                                 "bearing_degrees": obj.get('bearing_degrees'),
++#                                 "latitude": obj.get('latitude'),
++#                                 "longitude": obj.get('longitude'),
++#                                 "status": obj.get('status'),
++#                                 "speed_knots": obj.get('speed_knots'),
++#                                 "object_size": obj.get('object_size'),
++#                                 "heat_temperature_celsius": None,
++#                                 "danger": danger,
++#                                 "is_hostile": is_hostile
++#                             }
++#                         }
++#                     }
++#
++#             elif sensor_type == 'thermal':
++#                 mmsi = obj.get('mmsi')
++#                 if mmsi and mmsi in self.ships_data:
++#                     self.ships_data[mmsi]["data"]["detected_object"]["heat_temperature_celsius"] = obj.get(
++#                         'heat_temperature_celsius')
++#                     # Recalculate with new temperature data
++#                     danger, is_hostile = self.calculate_threat_levels(self.ships_data[mmsi]["data"]["detected_object"])
++#                     self.ships_data[mmsi]["data"]["detected_object"].update({
++#                         "danger": danger,
++#                         "is_hostile": is_hostile
++#                     })
++#
++#             elif sensor_type == 'sonar':
++#                 submarine_id = obj.get('submarine_id')
++#                 if submarine_id:
++#                     danger, is_hostile = self.calculate_submarine_threat(obj)
++#                     self.submarines_data[submarine_id] = {
++#                         "data": {
++#                             "type": "submarine",
++#                             "timestamp": timestamp,
++#                             "detected_object": {
++#                                 "submarine_id": submarine_id,
++#                                 "object_type": "Submarine",
++#                                 "depth_meters": obj.get('depth_meters'),
++#                                 "distance_km": obj.get('distance_km'),
++#                                 "bearing_degrees": obj.get('bearing_degrees'),
++#                                 "latitude": obj.get('latitude'),
++#                                 "longitude": obj.get('longitude'),
++#                                 "speed_knots": obj.get('speed_knots'),
++#                                 "object_shape": obj.get('object_shape', "Cylindrical"),
++#                                 "object_material": obj.get('object_material', "Metal"),
++#                                 "object_size": obj.get('object_size'),
++#                                 "status": obj.get('status', "Moving"),
++#                                 "danger": danger,
++#                                 "is_hostile": is_hostile
++#                             }
++#                         }
++#                     }
++#
++#
++# def main():
++#     topics = [
++#         'thermal_sensor_data',
++#         'radar_sensor_data',
++#         'sonar_sensor_data'
++#     ]
++#
++#     print("Starting Maritime Detector...")
++#     detector = MaritimeDetector(topics)
++#
++#     try:
++#         for message in detector.consumer:
++#             sensor_type = message.value.get('type', message.topic.split('_')[0])
++#             data = message.value.get('data', {})
++#             timestamp = message.value.get('timestamp')
++#
++#             detector.update_object_data(sensor_type, data, timestamp)
++#
++#             print("\n=== Current Maritime Status ===")
++#             if detector.ships_data:
++#                 print("\nShips:")
++#                 for ship_data in detector.ships_data.values():
++#                     print(json.dumps(ship_data, indent=2))
++#
++#             if detector.submarines_data:
++#                 print("\nSubmarines:")
++#                 for sub_data in detector.submarines_data.values():
++#                     print(json.dumps(sub_data, indent=2))
++#
++#     except KeyboardInterrupt:
++#         print("\nStopping detector...")
++#     finally:
++#         detector.consumer.close()
++#
++# if __name__ == "__main__":
++#     main()
++
+ 
+ from kafka import KafkaConsumer
+ import json
+ from typing import List, Dict, Tuple
+ from datetime import datetime
+ import math
++# from ..geographic_service.analyst_geographic import perform_maritime_analysis
++from main_app.geographic_service.analyst_geographic import perform_maritime_analysis
++import time
+ 
+ 
+ class MaritimeDetector:
+@@ -230,6 +503,13 @@
+                         }
+                     }
+ 
++    def get_all_objects_data(self):
++        """Return all current objects data as a list"""
++        all_data = []
++        all_data.extend(list(self.ships_data.values()))
++        all_data.extend(list(self.submarines_data.values()))
++        return all_data
++
+ 
+ def main():
+     topics = [
+@@ -241,6 +521,10 @@
+     print("Starting Maritime Detector...")
+     detector = MaritimeDetector(topics)
+ 
++    # Analysis interval in seconds
++    ANALYSIS_INTERVAL = 60
++    last_analysis_time = time.time()
++
+     try:
+         for message in detector.consumer:
+             sensor_type = message.value.get('type', message.topic.split('_')[0])
+@@ -249,6 +533,25 @@
+ 
+             detector.update_object_data(sensor_type, data, timestamp)
+ 
++            current_time = time.time()
++            if current_time - last_analysis_time >= ANALYSIS_INTERVAL:
++                print("\n=== Performing Geographic Analysis ===")
++                all_objects = detector.get_all_objects_data()
++
++                if all_objects:
++                    analysis_results = perform_maritime_analysis(all_objects)
++
++                    # Save visualizations
++                    analysis_results['map'].save('maritime_map.html')
++                    analysis_results['plots'].savefig('maritime_statistics.png')
++
++                    # Print analysis summary
++                    print("\nRisk Analysis Summary:")
++                    print(f"Total Objects: {len(all_objects)}")
++                    print(f"Risk Statistics: {analysis_results['risk_zones']['risk_statistics']}")
++
++                last_analysis_time = current_time
++
+             print("\n=== Current Maritime Status ===")
+             if detector.ships_data:
+                 print("\nShips:")
+@@ -265,5 +568,6 @@
+     finally:
+         detector.consumer.close()
+ 
++
+ if __name__ == "__main__":
+     main()
+\ No newline at end of file
+Index: main_app/kafka_service/weather_consumer.py
+===================================================================
+diff --git a/main_app/kafka_service/weather_consumer.py b/main_app/kafka_service/weather_consumer.py
+deleted file mode 100644
+--- a/main_app/kafka_service/weather_consumer.py	(revision 0f9058bade832e41c5b73f4c49b6f718a4ec9651)
++++ /dev/null	(revision 0f9058bade832e41c5b73f4c49b6f718a4ec9651)
+@@ -1,17 +0,0 @@
+-from kafka import KafkaConsumer
+-import json
+-
+-consumer = KafkaConsumer(
+-    'all.messages',
+-    bootstrap_servers='localhost:9092',
+-    auto_offset_reset='earliest',
+-    enable_auto_commit=False,
+-    group_id='emails',
+-    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+-)
+-
+-for message in consumer:
+-    msg = message.value
+-    # inserted_email = insert_email(msg)
+-    print(f"Stored email message: {msg}")
+-    # consumer.commit()
+\ No newline at end of file
+diff --git a/main_app/kafka_service/thermal_consumer.py b/main_app/kafka_service/thermal_consumer.py
+deleted file mode 100644

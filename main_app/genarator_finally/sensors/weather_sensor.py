@@ -56,5 +56,4 @@ class WeatherSensor(BaseSensor):
             "sensor_id": self.sensor_id
         }
 
-        self.send_to_kafka(data)
         return data
